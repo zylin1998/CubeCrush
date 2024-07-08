@@ -17,8 +17,9 @@ namespace CubeCrush
 
             _OptionFunctions = new()
             {
-                { 0, Start },
-                { 1, Quit  },
+                { 0, Restart },
+                { 1, Start   },
+                { 2, Quit    },
             };
 
             Init();
@@ -30,12 +31,28 @@ namespace CubeCrush
 
         private StartGame _Start = new StartGame();
 
+        private List<IListenerAdapter> _Listeners;
+
+        protected override void RegisterEvents()
+        {
+            Register<GameOver>(GameOver);
+        }
+
         private void Init() 
         {
-            View.ForEach(adapter =>
+            _Listeners = View.ToList();
+
+            _Listeners.ForEach(adapter =>
             {
                 adapter.AddListener(id => _OptionFunctions[id].Invoke(adapter));
             });
+
+            _Listeners.FirstOrDefault(l => l.Id == 0).To<ButtonListener>().Listener.interactable = false;
+        }
+
+        private void Restart(IListenerAdapter adapter) 
+        {
+            SettleEvents(_Start);
         }
 
         private void Start(IListenerAdapter adapter) 
@@ -43,11 +60,18 @@ namespace CubeCrush
             SettleEvents(_Start);
 
             ((ButtonListener)adapter).Listener.interactable = false;
+
+            _Listeners.FirstOrDefault(l => l.Id == 0).To<ButtonListener>().Listener.interactable = true;
         }
 
         private void Quit(IListenerAdapter adapter) 
         {
             Application.Quit();
+        }
+
+        private void GameOver(GameOver gameOver) 
+        {
+            _Listeners.FirstOrDefault(l => l.Id == 0).To<ButtonListener>().Listener.interactable = true;
         }
     }
 }

@@ -20,7 +20,7 @@ namespace CubeCrush
         [Inject]
         protected MapOffset.Pool Pool { get; }
 
-        private List<MapOffset> _Offsets;
+        private List<MapOffset> _Offsets = new();
 
         public float DropSpeed => _DropSpeed;
 
@@ -31,11 +31,10 @@ namespace CubeCrush
         {
             Pool.Content = transform;
 
-            var list   = new List<MapOffset>();
             var (x, y) = (0, 0);
             for(var index = 0; index < Declarations.Width * Declarations.Height; ++index) 
             {
-                list.Add(Pool.Spawn(new(x, y)));
+                _Offsets.Add(Pool.Spawn(new(x, y)));
                 
                 (x, y) = x == Declarations.Width - 1 ? (0, ++y) : (++x, y);
             }
@@ -45,9 +44,12 @@ namespace CubeCrush
             _LayoutGroup.SetLayoutHorizontal();
             _LayoutGroup.SetLayoutVertical();
 
-            _Offsets = list;
-
             return _Offsets;
+        }
+
+        public void RemoveCubes() 
+        {
+            _Offsets.ForEach(offset => offset.Clear());
         }
 
         public bool IsEmpty(Vector2Int offset) 

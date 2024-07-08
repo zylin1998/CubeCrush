@@ -19,5 +19,12 @@ namespace CubeCrush
 
             _Updater.Update(Declarations.Score, Score);
         }
+
+        public void Reset() 
+        {
+            Score = 0;
+
+            _Updater.Update(Declarations.Score, Score);
+        }
     }
 }

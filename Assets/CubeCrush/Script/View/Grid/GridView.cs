@@ -26,6 +26,11 @@ namespace CubeCrush
             return Map.Layout();
         }
 
+        public void RemoveCubes() 
+        {
+            Map.RemoveCubes();
+        }
+
         public void Clear(Vector2Int[] clear)
         {
             clear.ForEach(offset => Map[offset].Clear());
@@ -77,24 +82,24 @@ namespace CubeCrush
             {
                 Map.Swap(offset1.Offset, LastSwap.Offset);
                 
+                offset1.CheckPosition(Map.DropSpeed);
+                LastSwap.CheckPosition(Map.DropSpeed);
+
                 LastSwap = default;
 
                 Swapped  = false;
-
-                offset1.CheckPosition(Map.DropSpeed);
-                LastSwap.CheckPosition(Map.DropSpeed);
             }
 
             if (!Swapped && distance != Vector2Int.zero)
             {
                 Map.Swap(offset1.Offset, offset2.Offset);
 
+                offset1.CheckPosition(Map.DropSpeed);
+                offset2.CheckPosition(Map.DropSpeed);
+
                 LastSwap = offset2;
 
                 Swapped = true;
-
-                offset1.CheckPosition(Map.DropSpeed);
-                offset2.CheckPosition(Map.DropSpeed);
             }
         }
 

@@ -60,7 +60,7 @@ namespace CubeCrush
 
         public void Clear()
         {
-            Cube.Recycle();
+            Cube?.Recycle();
 
             Cube = default;
         }

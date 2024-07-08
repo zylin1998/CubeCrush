@@ -24,6 +24,8 @@ namespace CubeCrush
         {
             Grid.ClearAll();
 
+            Report.Reset();
+
             Query.InsertCubes = Grid.InjectEmptyAll().ToArray();
         }
 

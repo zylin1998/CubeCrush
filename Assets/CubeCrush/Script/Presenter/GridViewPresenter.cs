@@ -48,6 +48,8 @@ namespace CubeCrush
 
         private void GridLayout(LayoutGrid layout) 
         {
+            View.RemoveCubes();
+
             var cubes = Query.InsertCubes.ToArray();
 
             View.Drop(cubes);
