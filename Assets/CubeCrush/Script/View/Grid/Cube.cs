@@ -57,18 +57,22 @@ namespace CubeCrush
             }
         }
 
-        public IObservable<long> Move(Vector2 to, float speed)
+        private void Awake()
         {
-            var delta = speed * Time.fixedDeltaTime;
+            
+        }
 
+        public IObservable<long> Move(Vector2 to, float speed, float delay)
+        {
             var moving = Observable
                 .EveryFixedUpdate()
-                .TakeWhile(t => Mathf.Abs(Vector2.Distance(transform.position, to)) > 0);
-            
+                .Delay(TimeSpan.FromSeconds(delay))
+                .TakeWhile(t => Mathf.Abs(Vector3.Distance(transform.position, to)) > 0.01f);
+
             moving
                 .Subscribe(t =>
                 {
-                    var toward = Vector2.MoveTowards(transform.position, to, delta);
+                    var toward = Vector2.MoveTowards(transform.position, to, speed * Time.fixedDeltaTime);
 
                     transform.SetPositionAndRotation(toward, Quaternion.identity);
                 });

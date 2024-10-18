@@ -50,7 +50,7 @@ namespace CubeCrush
         {
             View.RemoveCubes();
 
-            var cubes = Query.InsertCubes.ToArray();
+            var cubes = Query.InsertCubes;
 
             View.Drop(cubes);
         }
@@ -64,21 +64,20 @@ namespace CubeCrush
             if (isClear)
             {
                 var clears = Query.Clears.ToArray();
-                var cubes  = Query.InsertCubes.ToArray();
+                var drops  = Query.InsertCubes.ToArray();
 
-                View.Clear(clears);
-
-                View.Map.AwaitMoving(() =>
-                {
-                    View.Drop(cubes);
-
-                    View.Map.AwaitMoving(() =>
-                    {   
-                        CheckFilled();
+                View
+                    .Clear(clears)
+                    .Subscribe(
+                    (left) => { },
+                    ()  =>
+                    {
+                        View
+                            .Drop(drops)
+                            .Subscribe(
+                                (left) => { },
+                                ()  =>CheckFilled());
                     });
-                    
-                    //Verify.ShowVerified();
-                });
             }
 
             else { View.SetMask(false); }
@@ -104,14 +103,17 @@ namespace CubeCrush
         private void ListenerAdapting(MapOffset offset) 
         {
             var selectable = offset.Selectable;
-            
+            var observable = default(IObservable<int>);
+
             selectable
                 .OnDragAsObservable()
                 .Subscribe(data =>
                 {
                     var target = data.pointerEnter.GetComponent<MapOffset>();
-                    
-                    View.Swap(offset, target);
+
+                    //if (target.IsDefault() || target ==  View.LastSwap) { return; }
+
+                    observable = View.Swap(offset, target) ?? observable;
                 });
 
             selectable
@@ -122,10 +124,9 @@ namespace CubeCrush
 
                     View.SetMask(true);
 
-                    View.Map.AwaitMoving(() =>
-                    {
-                        SettleEvents(new SwapCube(offset.Offset, View.LastSwap.Offset));
-                    });
+                    observable.Subscribe(
+                        (l) => {  },
+                        ()  => SettleEvents(new SwapCube(offset.Offset, View.LastSwap.Offset)));
                 });
         }
     }

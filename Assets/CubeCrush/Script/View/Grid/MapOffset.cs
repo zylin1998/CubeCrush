@@ -50,8 +50,13 @@ namespace CubeCrush
             {
                 _Cube = value;
 
-                _Cube?.transform.SetParent(transform);
-            } 
+                if (_Cube)
+                {
+                    _Cube.transform.SetParent(transform, true);
+                    
+                    if (_Cube.transform.localScale != Vector3.one) _Cube.transform.localScale = Vector3.one;
+                }
+            }
         }
 
         public Vector2    Position => transform.position;
@@ -65,11 +70,11 @@ namespace CubeCrush
             Cube = default;
         }
 
-        public IObservable<long> CheckPosition(float speed) 
+        public IObservable<long> CheckPosition(float speed, float delay = 0f) 
         {
             if (Cube.IsDefault() || Vector2.Distance(Cube.transform.position, Position) <= 0) { return default; }
 
-            return Cube.Move(Position, speed);
+            return Cube.Move(Position, speed, delay);
         }
     }
 }

@@ -22,13 +22,14 @@ namespace CubeCrush
 
         private List<MapOffset> _Offsets = new();
 
-        public float DropSpeed => _DropSpeed;
+        public float DropSpeed => Screen.height / 1080f * _DropSpeed;
 
         public MapOffset this[Vector2Int offset] 
             => _Offsets.FirstOrDefault(o => Equals(o.Offset, offset));
 
         public IEnumerable<MapOffset> Layout() 
         {
+            //Debug.Log(Screen.height);
             Pool.Content = transform;
 
             var (x, y) = (0, 0);
@@ -68,30 +69,13 @@ namespace CubeCrush
             mapOffset2.Cube = temp;
         }
 
-        public void SwapEmptyAll(Vector2Int[] clears)
+        public IEnumerable<IObservable<long>> SwapEmptyAll(Vector2Int[] clears)
         {
             clears.ForEach(SwapEmpty);
 
-            _Offsets.ForEach(offset =>
-            {
-                if (offset.Dislocation) { offset.CheckPosition(DropSpeed); }
-            });
-        }
-
-        public void AwaitMoving(Action onEnd) 
-        {
-            if (!_Offsets.Any(offset => offset.Dislocation))
-            {
-                onEnd?.Invoke();
-
-                return;
-            }
-
-            Observable
-                .EveryLateUpdate()
-                .TakeWhile(t => _Offsets.Any(offset => offset.Dislocation))
-                .Last()
-                .Subscribe(t => onEnd?.Invoke());
+            return _Offsets
+                .Where(o => o.Dislocation)
+                .Select(o => o.CheckPosition(DropSpeed));
         }
 
         private void SwapEmpty(Vector2Int offset)
