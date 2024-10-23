@@ -27,7 +27,7 @@ namespace CubeCrush
         private void Start(StartGame start) 
         {
             Model.Start();
-
+            
             SettleEvents(_Layout);
         }
 
@@ -54,7 +54,7 @@ namespace CubeCrush
                 {
                     events.Add(new GameOver());
                 }
-
+                Debug.Log(events.Count);
                 SettleEvents(events.ToArray());
 
                 return;

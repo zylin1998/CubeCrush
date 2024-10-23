@@ -25,11 +25,15 @@ namespace CubeCrush
         public CubeGridQuery Query { get; }
 
         [Inject]
-        public GridVerify Verify { get; }
+        private GridVerify Verify { get; }
+        [Inject]
+        private DataUpdater Updater { get; }
 
         private CheckFilled _Check = new CheckFilled();
+        private GameOver    _Over  = new GameOver();
 
         private float _CheckDelay = 0.5f;
+        private int   _TurnCount = 0;
 
         private void Init() 
         {
@@ -65,7 +69,7 @@ namespace CubeCrush
             {
                 var clears = Query.Clears.ToArray();
                 var drops  = Query.InsertCubes.ToArray();
-
+                
                 View
                     .Clear(clears)
                     .Subscribe(
@@ -80,7 +84,18 @@ namespace CubeCrush
                     });
             }
 
-            else { View.SetMask(false); }
+            else
+            {
+                _TurnCount--;
+
+                Updater.Update(Declarations.Turn, _TurnCount);
+
+                var isZero = _TurnCount == 0;
+
+                View.SetMask(isZero);
+                
+                if(isZero) { SettleEvents(_Over); }
+            }
         }
 
         private void GameOver(GameOver gameOver) 
@@ -90,6 +105,10 @@ namespace CubeCrush
 
         private void StartGame(StartGame start)
         {
+            _TurnCount = Declarations.MaxTurn;
+
+            Updater.Update(Declarations.Turn, _TurnCount);
+
             View.SetMask(false);
         }
 
@@ -109,9 +128,7 @@ namespace CubeCrush
                 .OnDragAsObservable()
                 .Subscribe(data =>
                 {
-                    var target = data.pointerEnter.GetComponent<MapOffset>();
-
-                    //if (target.IsDefault() || target ==  View.LastSwap) { return; }
+                    var target = data.pointerEnter?.GetComponent<MapOffset>();
 
                     observable = View.Swap(offset, target) ?? observable;
                 });

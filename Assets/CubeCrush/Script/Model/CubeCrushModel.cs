@@ -74,7 +74,7 @@ namespace CubeCrush
             var horiClear  = ClearLine(horizontal);
             var vertClear  = ClearLine(vertical);
 
-            ReportScore(new Vector2Int[][] { horizontal, vertical });
+            ReportScore(horizontal, vertical);
             
             return horiClear || vertClear;
         }
@@ -91,7 +91,7 @@ namespace CubeCrush
                 var horizontal = GetLine(offset, new(1, 0));
                 var vertical   = GetLine(offset, new(0, 1));
 
-                if (horizontal.Length >= 3 || vertical.Length >= 3) 
+                if (horizontal.Count() >= 3 || vertical.Count() >= 3) 
                 {
                     list.Add((offset, type)); 
                 }
@@ -101,7 +101,7 @@ namespace CubeCrush
 
             for (var i = 1; i < Declarations.TypeColor.Length; i++) 
             {
-                Report.ReportScore(Declarations.GetScore(list.Sum(info => info.type == i ? 1 : 0)));
+                Report.ReportScore(Declarations.GetScore(list.Count(info => info.type == i)));
             }
 
             return ClearLine(list.ConvertAll(c => c.offset));
@@ -127,11 +127,11 @@ namespace CubeCrush
             return true;
         }
 
-        private bool CheckPreview(Vector2Int offset, Vector2Int direct, Vector2Int[] line) 
+        private bool CheckPreview(Vector2Int offset, Vector2Int direct, IEnumerable<Vector2Int> line) 
         {
-            if (line.Length < 2) { return false; }
+            if (line.Count() < 2) { return false; }
 
-            var value = Grid.Get(line[0].x, line[0].y);
+            var value = Grid.Get(line.First().x, line.First().y);
 
             var offset1 = offset + direct;
             var offset2 = offset - direct;
@@ -139,21 +139,17 @@ namespace CubeCrush
             return Grid.Get(offset1.x, offset1.y) == value || Grid.Get(offset2.x, offset2.y) == value;
         }
 
-        private Vector2Int[] PreviewLine(Vector2Int offset, Vector2Int direct) 
+        private IEnumerable<Vector2Int> PreviewLine(Vector2Int offset, Vector2Int direct) 
         {
-            var line = GetPositions(offset, direct, true).ToArray();
-
-            return Continuous(line, 2);
+            return Continuous(GetPositions(offset, direct, true), 2);
         }
 
-        private Vector2Int[] GetLine(Vector2Int offset, Vector2Int direct) 
+        private IEnumerable<Vector2Int> GetLine(Vector2Int offset, Vector2Int direct) 
         {
-            var line = GetPositions(offset, direct, false).ToArray();
-
-            return Continuous(line, 3);
+            return Continuous(GetPositions(offset, direct, false), 3);
         }
 
-        private Vector2Int[] Continuous(Vector2Int[] positions, int continuous) 
+        private IEnumerable<Vector2Int> Continuous(IEnumerable<Vector2Int> positions, int continuous) 
         {
             var list = new List<Vector2Int>();
             var type = 0;
@@ -176,7 +172,7 @@ namespace CubeCrush
                 type = grid;
             }
             
-            return list.ToArray();
+            return list;
         }
 
         private IEnumerable<Vector2Int> GetPositions(Vector2Int offset, Vector2Int direct, bool ignoreOffset) 
@@ -200,9 +196,9 @@ namespace CubeCrush
             }
         }
 
-        private void ReportScore(IEnumerable<Vector2Int[]> lines) 
+        private void ReportScore(params IEnumerable<Vector2Int>[] lines) 
         {
-            var score = lines.Sum(line => Declarations.GetScore(line.Length));
+            var score = lines.Sum(line => Declarations.GetScore(line.Count()));
 
             if (score <= 0) { return; }
 

@@ -57,9 +57,14 @@ namespace Loyufei.DomainEvents
 
         public static void Post(this DomainEventService self, IAggregateRoot root, object group = null) 
         {
-            root.ForEach(e => self.Post(e, group));
+            var list = root.ToList();
             
             root.ClearEvent();
+
+            foreach (var e in list) 
+            {
+                self.Post(e, group);
+            }
         }
     }
 }

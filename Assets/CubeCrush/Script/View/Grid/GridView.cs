@@ -164,8 +164,8 @@ namespace CubeCrush
             });
         }
 
-        private List<IObservable<long>> _Observables;
-        private List<IObserver<int>>    _Observers;
+        readonly private List<IObservable<long>> _Observables;
+        readonly private List<IObserver<int>>    _Observers;
 
         private int _Finished = 0;
 
