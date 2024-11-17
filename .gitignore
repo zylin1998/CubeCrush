@@ -61,3 +61,14 @@ sysinfo.txt
 # Crashlytics generated file
 crashlytics-build.properties
 
+Packages/
+
+Assets/Plugins/Loyufei/
+
+Assets/Plugins/Zenject/
+
+Assets/Plugins/UniRx/
+
+UserSettings/
+
+ProjectSettings/
