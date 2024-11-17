@@ -5,7 +5,7 @@ using Loyufei.ViewManagement;
 
 namespace CubeCrush
 {
-    public class InfoView : MenuBase, IUpdateGroup
+    public class InfoView : MonoViewBase, IUpdateGroup
     {
         public IEnumerable<IUpdateContext> Contexts => GetComponentsInChildren<IUpdateContext>();
     }

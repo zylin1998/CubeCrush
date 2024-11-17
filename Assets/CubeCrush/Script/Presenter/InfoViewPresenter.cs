@@ -11,7 +11,7 @@ namespace CubeCrush
 {
     public class InfoViewPresenter : Presenter
     {
-        public InfoViewPresenter(InfoView view, DomainEventService service) : base(service)
+        public InfoViewPresenter(InfoView view)
         {
             View = view;
 
@@ -40,11 +40,11 @@ namespace CubeCrush
 
         private void Init() 
         {
-            _Listeners = View.ToList();
-
+            _Listeners = View.Layout().FindAll<IListenerAdapter>().ToList();
+            
             _Listeners.ForEach(adapter =>
             {
-                adapter.AddListener(id => _OptionFunctions[id].Invoke(adapter));
+                adapter.AddListener(id => _OptionFunctions[adapter.Id].Invoke(adapter));
             });
 
             _Listeners.FirstOrDefault(l => l.Id == 0).To<ButtonListener>().Listener.interactable = false;

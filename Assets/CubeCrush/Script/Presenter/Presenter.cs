@@ -7,11 +7,6 @@ namespace CubeCrush
 {
     public class Presenter : Loyufei.MVP.Presenter
     {
-        public Presenter(DomainEventService service) : base(service)
-        {
-
-        }
-
         public override object GroupId => Declarations.CubeCrush;
     }
 }

@@ -4,7 +4,7 @@ namespace CubeCrush
 {
     public class GameOverViewPresenter : Presenter
     {
-        public GameOverViewPresenter(GameOverView view, DomainEventService service) : base(service)
+        public GameOverViewPresenter(GameOverView view)
         {
             View = view;
         }

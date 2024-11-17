@@ -8,7 +8,7 @@ namespace CubeCrush
 {
     public class CubeCrushPresenter : Presenter
     {
-        public CubeCrushPresenter(CubeCrushModel model, DomainEventService service) : base(service)
+        public CubeCrushPresenter(CubeCrushModel model)
         {
             Model = model;
         }

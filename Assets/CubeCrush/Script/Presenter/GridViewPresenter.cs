@@ -13,7 +13,7 @@ namespace CubeCrush
 {
     public class GridViewPresenter : Presenter
     {
-        public GridViewPresenter(GridView view, CubeGridQuery query, DomainEventService service) : base(service)
+        public GridViewPresenter(GridView view, CubeGridQuery query)
         {
             View  = view;
             Query = query;
@@ -34,6 +34,8 @@ namespace CubeCrush
 
         private float _CheckDelay = 0.5f;
         private int   _TurnCount = 0;
+
+        private bool _Cleared = false;
 
         private void Init() 
         {
@@ -67,6 +69,8 @@ namespace CubeCrush
 
             if (isClear)
             {
+                _Cleared = true;
+
                 var clears = Query.Clears.ToArray();
                 var drops  = Query.InsertCubes.ToArray();
 
@@ -77,17 +81,26 @@ namespace CubeCrush
                     ()     => CheckFilled());
             }
 
-            else
+            if (!isClear)
             {
-                _TurnCount--;
+                var setMask = false;
 
-                Updater.Update(Declarations.Turn, _TurnCount);
+                if (_Cleared)
+                {
+                    _TurnCount--;
 
-                var isZero = _TurnCount == 0;
+                    Updater.Update(Declarations.Turn, _TurnCount);
 
-                View.SetMask(isZero);
-                
-                if(isZero) { SettleEvents(_Over); }
+                    var isZero = _TurnCount == 0;
+
+                    setMask = isZero;
+
+                    if (isZero) { SettleEvents(_Over); }
+                }
+
+                View.SetMask(setMask);
+
+                _Cleared = false;
             }
         }
 

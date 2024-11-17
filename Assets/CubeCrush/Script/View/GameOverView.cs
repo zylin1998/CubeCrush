@@ -2,7 +2,7 @@ using Loyufei.ViewManagement;
 
 namespace CubeCrush
 {
-    public class GameOverView : MenuBase
+    public class GameOverView : MonoViewBase
     {
         
     }

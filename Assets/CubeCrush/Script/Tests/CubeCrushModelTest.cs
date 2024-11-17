@@ -5,8 +5,6 @@ using UnityEngine;
 using Zenject;
 using NUnit.Framework;
 using Loyufei;
-using DG.Tweening.Plugins;
-using UnityEngine.UI;
 
 namespace CubeCrush.Tests
 {

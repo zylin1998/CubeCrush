@@ -33,17 +33,8 @@ namespace CubeCrush
             SignalBusInstaller.Install(Container);
 
             Container
-                .DeclareSignal<IDomainEvent>()
-                .WithId(Declarations.CubeCrush);
-
-            Container
                 .Bind<IDomainEventBus>()
                 .To<DomainEventBus>()
-                .AsCached()
-                .WithArguments(Declarations.CubeCrush);
-
-            Container
-                .Bind<DomainEventService>()
                 .AsSingle();
 
             #endregion
