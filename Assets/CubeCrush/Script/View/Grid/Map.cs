@@ -69,7 +69,7 @@ namespace CubeCrush
             mapOffset2.Cube = temp;
         }
 
-        public IEnumerable<IObservable<long>> SwapEmptyAll(Vector2Int[] clears)
+        public IEnumerable<IObservable<Vector3>> SwapEmptyAll(Vector2Int[] clears)
         {
             clears.ForEach(SwapEmpty);
 

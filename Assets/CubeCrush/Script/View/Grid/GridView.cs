@@ -35,30 +35,39 @@ namespace CubeCrush
         {
             clear.ForEach(offset => Map[offset].Clear());
 
-            return new MovementObservable(Map.SwapEmptyAll(clear));
+            return WaitMovement(Map.SwapEmptyAll(clear));
         }
 
         public IObservable<int> ClearAndDrop(Vector2Int[] clear, (Vector2Int offset, int type)[] drops)
         {
-            Clear(clear);
+            var subject = new Subject<int>();
+            
+            Clear(clear)
+                .Subscribe((left) => { }, () =>
+                {
+                    Drop(drops)
+                        .Subscribe(subject.OnNext, subject.OnError, subject.OnCompleted);
+                });
 
-            return Drop(drops);
+            return subject;
         }
 
         public IObservable<int> Drop(IEnumerable<(Vector2Int offset, int type)> drops)
         {
-            var max = drops.Max(d => d.offset.y);
+            var list = drops.ToList();
+            var max  = list.Max(d => d.offset.y);
 
-            return new MovementObservable(drops
-                .Select(drop =>
-                {
-                    var offset = Map[drop.offset];
-                    var dueTime = (max - drop.offset.y) * 0.1f;
+            var subject = new IntReactiveProperty(list.Count);
 
-                    offset.Cube = CubePool.Spawn(drop.type, new(offset.Position.x, _Instantiate.position.y));
+            return WaitMovement(list.Select(drop =>
+            {
+                var offset  = Map[drop.offset];
+                var dueTime = (max - drop.offset.y) * 0.1f;
 
-                    return offset.CheckPosition(Map.DropSpeed, dueTime);
-                }));
+                offset.Cube = CubePool.Spawn(drop.type, new(offset.Position.x, _Instantiate.position.y));
+
+                return offset.CheckPosition(Map.DropSpeed, dueTime);
+            }));
         }
 
         public bool      Swapped  { get; private set; } = false;
@@ -83,7 +92,7 @@ namespace CubeCrush
             {
                 Map.Swap(offset1.Offset, LastSwap.Offset);
 
-                result = new MovementObservable(offset1.CheckPosition(dropSpeed), LastSwap.CheckPosition(dropSpeed));
+                result = WaitMovement(new[] { offset1.CheckPosition(dropSpeed), LastSwap.CheckPosition(dropSpeed) });
                 
                 (LastSwap, Swapped) = (default, false);
             }
@@ -92,7 +101,7 @@ namespace CubeCrush
             {
                 Map.Swap(offset1.Offset, offset2.Offset);
 
-                result = new MovementObservable(offset1.CheckPosition(dropSpeed), offset2.CheckPosition(dropSpeed));
+                result = WaitMovement(new[] { offset1.CheckPosition(dropSpeed), offset2.CheckPosition(dropSpeed) });
 
                 (LastSwap, Swapped) = (offset2, true);
             }
@@ -120,87 +129,16 @@ namespace CubeCrush
         {
             _Mask.gameObject.SetActive(mask);
         }
-    }
 
-    public class MovementObservable : IObservable<int>, IObserver<int> 
-    {
-        private class DisSubscribe : IDisposable
+        private IObservable<int> WaitMovement(IEnumerable<IObservable<Vector3>> movements) 
         {
-            public DisSubscribe(List<IObserver<int>> observers, IObserver<int> target) 
-            {
-                _Observers = observers;
-                _Target    = target;
-            }
+            var list = movements.ToList();
 
-            private List<IObserver<int>> _Observers;
-            private IObserver<int> _Target;
+            var subject = new IntReactiveProperty(list.Count);
 
-            public void Dispose()
-            {
-                _Observers.Remove(_Target);
-            }
-        }
+            list.ForEach(movement => movement.Subscribe((posi) => { }, () => --subject.Value));
 
-        public MovementObservable(params IObservable<long>[] observables) : this((IEnumerable<IObservable<long>>)observables) 
-        {
-
-        }
-
-        public MovementObservable(IEnumerable<IObservable<long>> observables) 
-        {
-            _Observables = observables.ToList();
-            _Observers   = new();
-
-            var index = 0;
-            _Observables.ForEach(o =>
-            {
-                o
-                .LastOrDefault()
-                .Subscribe(
-                    (l) => { },
-                    () => OnNext(index));
-                
-                index++;
-            });
-        }
-
-        readonly private List<IObservable<long>> _Observables;
-        readonly private List<IObserver<int>>    _Observers;
-
-        private int _Finished = 0;
-
-        public void OnNext(int index) 
-        {
-            var count = _Observables.Count;
-            
-            _Finished++;
-
-            _Observers.ForEach(o => o.OnNext(count - _Finished));
-            
-            if (_Finished == _Observables.Count) { OnCompleted(); }
-
-            if (_Finished <= 0 || _Finished > _Observables.Count) { OnError(new ArgumentOutOfRangeException()); }
-        }
-
-        public void OnCompleted()
-        {
-            _Observers.ForEach(o => o.OnCompleted());
-        }
-
-        public void OnError(Exception error)
-        {
-            _Observers.ForEach(o => o.OnError(error));
-        }
-
-        public IDisposable Subscribe(IObserver<int> observer)
-        {
-            _Observers.Add(observer);
-            
-            var count = _Observables.Count;
-
-            if (count == 0 || _Finished == count) { observer.OnCompleted(); }
-
-            return new DisSubscribe(_Observers, observer);
+            return subject.TakeWhile(left => left > 0);
         }
     }
 }

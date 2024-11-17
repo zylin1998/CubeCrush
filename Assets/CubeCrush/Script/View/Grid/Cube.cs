@@ -62,22 +62,32 @@ namespace CubeCrush
             
         }
 
-        public IObservable<long> Move(Vector2 to, float speed, float delay)
+        public IObservable<Vector3> Move(Vector2 to, float speed, float delay)
         {
-            var moving = Observable
+            var subject = new Subject<Vector3>();
+            //var delayTime = delay;
+
+            Observable
                 .EveryFixedUpdate()
-                .Delay(TimeSpan.FromSeconds(delay))
-                .TakeWhile(t => Mathf.Abs(Vector3.Distance(transform.position, to)) > 0.01f);
-
-            moving
-                .Subscribe(t =>
+                .TakeWhile(t => Mathf.Abs(Vector3.Distance(transform.position, to)) > 0.01f)
+                .Subscribe(l =>
                 {
-                    var toward = Vector2.MoveTowards(transform.position, to, speed * Time.fixedDeltaTime);
+                    if (delay > 0) { delay -= Time.fixedDeltaTime; }
 
-                    transform.SetPositionAndRotation(toward, Quaternion.identity);
+                    else
+                    {
+                        var toward = Vector2.MoveTowards(transform.position, to, speed * Time.fixedDeltaTime);
+
+                        transform.SetPositionAndRotation(toward, Quaternion.identity);
+                    }
+
+                    subject.OnNext(transform.position);
+                },() => 
+                {
+                    subject.OnCompleted();
                 });
-
-            return moving;
+            
+            return subject;
         }
 
         public void Recycle() 

@@ -70,7 +70,7 @@ namespace CubeCrush
             Cube = default;
         }
 
-        public IObservable<long> CheckPosition(float speed, float delay = 0f) 
+        public IObservable<Vector3> CheckPosition(float speed, float delay = 0f) 
         {
             if (Cube.IsDefault() || Vector2.Distance(Cube.transform.position, Position) <= 0) { return default; }
 

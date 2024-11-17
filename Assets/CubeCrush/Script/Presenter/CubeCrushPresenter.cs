@@ -54,7 +54,7 @@ namespace CubeCrush
                 {
                     events.Add(new GameOver());
                 }
-                Debug.Log(events.Count);
+
                 SettleEvents(events.ToArray());
 
                 return;

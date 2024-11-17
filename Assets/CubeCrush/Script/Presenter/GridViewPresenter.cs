@@ -69,19 +69,12 @@ namespace CubeCrush
             {
                 var clears = Query.Clears.ToArray();
                 var drops  = Query.InsertCubes.ToArray();
-                
+
                 View
-                    .Clear(clears)
+                    .ClearAndDrop(clears, drops)
                     .Subscribe(
                     (left) => { },
-                    ()  =>
-                    {
-                        View
-                            .Drop(drops)
-                            .Subscribe(
-                                (left) => { },
-                                ()  =>CheckFilled());
-                    });
+                    ()     => CheckFilled());
             }
 
             else
