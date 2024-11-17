@@ -3,6 +3,8 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using Loyufei.DomainEvents;
+using Zenject;
+using Loyufei;
 
 namespace CubeCrush
 {
@@ -15,7 +17,12 @@ namespace CubeCrush
 
         public CubeCrushModel Model { get; }
 
+        [Inject]
+        public DataUpdater DataUpdater { get; }
+
         private LayoutGrid _Layout = new LayoutGrid();
+
+        private int _Turns = 40;
 
         protected override void RegisterEvents()
         {
@@ -27,7 +34,11 @@ namespace CubeCrush
         private void Start(StartGame start) 
         {
             Model.Start();
-            
+
+            _Turns = 40;
+
+            DataUpdater.Update(Declarations.Turn, _Turns);
+
             SettleEvents(_Layout);
         }
 
@@ -47,7 +58,11 @@ namespace CubeCrush
 
             if (!cleared)
             {
-                var gameOver = Model.GameOver();
+                _Turns--;
+
+                DataUpdater.Update(Declarations.Turn, _Turns);
+
+                var gameOver = Model.GameOver() || _Turns == 0;
                 var events   = new List<IDomainEvent>() { clear };
                 
                 if (gameOver) 

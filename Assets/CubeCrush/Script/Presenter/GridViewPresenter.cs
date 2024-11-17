@@ -26,16 +26,11 @@ namespace CubeCrush
 
         [Inject]
         private GridVerify Verify { get; }
-        [Inject]
-        private DataUpdater Updater { get; }
-
+        
         private CheckFilled _Check = new CheckFilled();
         private GameOver    _Over  = new GameOver();
 
         private float _CheckDelay = 0.5f;
-        private int   _TurnCount = 0;
-
-        private bool _Cleared = false;
 
         private void Init() 
         {
@@ -69,8 +64,6 @@ namespace CubeCrush
 
             if (isClear)
             {
-                _Cleared = true;
-
                 var clears = Query.Clears.ToArray();
                 var drops  = Query.InsertCubes.ToArray();
 
@@ -83,24 +76,7 @@ namespace CubeCrush
 
             if (!isClear)
             {
-                var setMask = false;
-
-                if (_Cleared)
-                {
-                    _TurnCount--;
-
-                    Updater.Update(Declarations.Turn, _TurnCount);
-
-                    var isZero = _TurnCount == 0;
-
-                    setMask = isZero;
-
-                    if (isZero) { SettleEvents(_Over); }
-                }
-
-                View.SetMask(setMask);
-
-                _Cleared = false;
+                View.SetMask(false);
             }
         }
 
@@ -111,10 +87,6 @@ namespace CubeCrush
 
         private void StartGame(StartGame start)
         {
-            _TurnCount = Declarations.MaxTurn;
-
-            Updater.Update(Declarations.Turn, _TurnCount);
-
             View.SetMask(false);
         }
 
